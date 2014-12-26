@@ -1,0 +1,1 @@
+require 'roda/plugins/auth'

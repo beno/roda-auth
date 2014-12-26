@@ -1,0 +1,28 @@
+PATH
+  remote: .
+  specs:
+    roda-auth (0.0.1)
+      roda (~> 1.2)
+      warden (~> 1.2)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.5.0)
+    rack (1.6.0)
+    rack-test (0.6.2)
+      rack (>= 1.0)
+    rake (10.4.2)
+    roda (1.2.0)
+      rack
+    warden (1.2.3)
+      rack (>= 1.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  minitest (~> 5.5)
+  rack-test (~> 0.6)
+  rake (~> 10)
+  roda-auth!
