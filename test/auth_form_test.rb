@@ -37,7 +37,7 @@ class AuthFormTest < Minitest::Test
 	def test_private_refuse_redirect
 		r = req('/private')
 		assert_equal 302, r[0]
-		assert_equal "/login", r[1]['HTTP-LOCATION']
+		assert_equal "/login", r[1]['LOCATION']
 	end
 	
 	def test_private_accepted

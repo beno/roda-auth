@@ -17,16 +17,23 @@ require 'roda/auth'
 
 class App < Roda
   
+  # supports 3 auth types: :basic (default), :form or :token
   # :user_class defaults to ::User
+  # :redirect defaults to '/unauthenticated'
   
   plugin :auth, :form, user_class: MyUser, redirect: '/login'
   
   route do |r|
     r.post 'login' do
-      sign_in
+      sign_in do
+        redirect "/private/profile/#{current_user}"
+      end
     end
     r.get 'login' do
       #render login form
+    end
+    r.post 'logout' do
+      sign_out
     end
     r.on 'public' do
       #public content

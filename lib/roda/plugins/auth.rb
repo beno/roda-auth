@@ -1,4 +1,5 @@
 require 'base64'
+require 'json'
 require 'warden'
 require 'roda'
 
@@ -45,11 +46,19 @@ class Roda
 				when :basic
 					->(env) {[401, {"WWW-AUTHENTICATE" => "Basic: Realm=\"#{env['warden.options'][:attempted_path]}\""}, []] }
 				when :form
-					->(env) {[302, {"HTTP-LOCATION" => env['warden.options'][:action]} , []] }
+					->(env) {[302, {"LOCATION" => env['warden.options'][:action]} , []] }
 				when :token
 					->(env) {[401, {"WWW-AUTHENTICATE" => "\"Token\""}, []] }
 				end
 				->(env) { auth_fail.call(env) }
+			end
+			
+			module ResponseMethods
+				
+				def default_headers
+					{}
+				end
+			
 			end
 						
 			module InstanceMethods
@@ -68,17 +77,26 @@ class Roda
 					user = warden.authenticate!
 					warden.set_user(user)
 					request.is(&block) if block
-					request.response.status = 201
 					user
 				end
 				
 				def sign_out &block
-					warden.set_user(nil)
+
+					#lifted from devise
+					warden.raw_session.inspect # Without this inspect here. The session does not clear.
+					warden.logout(scope)
+					warden.clear_strategies_cache!(scope: scope)
 					request.is(&block) if block
+
+					# request.response.headers.delete('Content-Type')
 					request.response.status = 204
 				end
 				
 				private
+				
+				def scope
+					:user
+				end
 				
 				def warden
 					request.env['warden']
@@ -125,7 +143,8 @@ class Roda
 				end
 		
 				def credentials_from_body
-					request.body && JSON.parse(request.body.string)
+					body = request.body.read
+					!body.empty? && JSON.parse(body)
 				end
 		
 				def token_from_auth_header
@@ -144,6 +163,7 @@ class Roda
 			class Password < Base
 		
 				def valid?
+					p credentials
 					credentials['username'] && credentials['password']
 				end
 				
