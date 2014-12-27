@@ -10,6 +10,7 @@ class Roda
 		module Auth
 			
 			def self.load_dependencies(app, *args, &block)
+				app.plugin :drop_body
 				Warden::Strategies.add(:token, Strategies::Token)
 				Warden::Strategies.add(:password, Strategies::Password)
 				Warden::Strategies.add(:basic, Strategies::Basic)
@@ -74,14 +75,12 @@ class Roda
 				end
 				
 				def sign_out &block
-
 					#lifted from devise
 					warden.raw_session.inspect # Without this inspect here. The session does not clear.
 					warden.logout(scope)
 					warden.clear_strategies_cache!(scope: scope)
-					request.is(&block) if block
 
-					# request.response.headers.delete('Content-Type')
+					request.is(&block) if block
 					request.response.status = 204
 				end
 				
@@ -107,14 +106,14 @@ class Roda
 		
 			class Base < Warden::Strategies::Base
 						
-				def success!(u)
-					u.authentic! if u.respond_to?(:authentic!)
+				def success!(user)
+					user.authentic! if user.respond_to?(:authentic!)
 					super
 				end
 				
 				def authenticate!
-					u = warden.config[:user_class].authentic?(credentials)
-					u.nil? ? fail!("Could not log in") : success!(u)
+					user = warden.config[:user_class].authentic?(credentials)
+					user.nil? ? fail!("Could not log in") : success!(user)
 				end
 		
 				private
