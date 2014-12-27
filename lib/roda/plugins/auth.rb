@@ -19,7 +19,7 @@ class Roda
 				options = args.last.is_a?(Hash) ? args.pop : {}
 				user_class = options.delete(:user_class) || ::User
 				type = args[0] || :basic
-				redirect = options.delete(:redirect) || '/unautenticated'
+				redirect = options.delete(:redirect) || 'unauthenticated'
 				case type
 				when :basic
 					strategies = [:basic]
@@ -44,23 +44,15 @@ class Roda
 			def self.fail(type)
 				auth_fail  = case type
 				when :basic
-					->(env) {[401, {"WWW-AUTHENTICATE" => "Basic: Realm=\"#{env['warden.options'][:attempted_path]}\""}, []] }
+					->(env) {[401, {"WWW-AUTHENTICATE" => "Basic realm=\"#{env['warden.options'][:attempted_path]}\""}, []] }
 				when :form
 					->(env) {[302, {"LOCATION" => env['warden.options'][:action]} , []] }
 				when :token
-					->(env) {[401, {"WWW-AUTHENTICATE" => "\"Token\""}, []] }
+					->(env) {[401, {"WWW-AUTHENTICATE" => "Token"}, []] }
 				end
 				->(env) { auth_fail.call(env) }
 			end
-			
-			module ResponseMethods
-				
-				def default_headers
-					{}
-				end
-			
-			end
-						
+									
 			module InstanceMethods
 				
 				def authenticate!
@@ -77,6 +69,7 @@ class Roda
 					user = warden.authenticate!
 					warden.set_user(user)
 					request.is(&block) if block
+					request.response.status = 201
 					user
 				end
 				
@@ -143,8 +136,10 @@ class Roda
 				end
 		
 				def credentials_from_body
-					body = request.body.read
-					!body.empty? && JSON.parse(body)
+					if request.body
+						body = request.body.read
+						!body.empty? && JSON.parse(body)
+					end
 				end
 		
 				def token_from_auth_header
@@ -163,15 +158,13 @@ class Roda
 			class Password < Base
 		
 				def valid?
-					p credentials
 					credentials['username'] && credentials['password']
 				end
 				
 				private
 		
 				def credentials
-					@credentials if @credentials
-					@credentials = credentials_from_form || credentials_from_body || {}
+					@credentials ||= credentials_from_form || credentials_from_body || {}
 				end
 		
 			end
@@ -185,8 +178,7 @@ class Roda
 				private
 			
 				def credentials
-					@credentials if @credentials
-					@credentials = credentials_from_basic || {}
+					@credentials ||= credentials_from_basic || {}
 				end
 			
 			end
@@ -201,8 +193,7 @@ class Roda
 				private
 		
 				def credentials
-					@credentials if @credentials
-					@credentials = token_from_auth_header || {}
+					@credentials ||= token_from_auth_header || {}
 				end
 		
 			end
