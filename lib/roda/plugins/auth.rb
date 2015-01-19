@@ -1,4 +1,5 @@
 require 'base64'
+require 'bcrypt'
 require 'json'
 require 'warden'
 require 'roda'
@@ -45,7 +46,7 @@ class Roda
 			def self.fail(type)
 				auth_fail  = case type
 				when :basic
-					->(env) {[401, {"WWW-AUTHENTICATE" => "Basic realm=\"#{env['warden.options'][:attempted_path]}\""}, []] }
+					->(env) {[401, {"WWW-AUTHENTICATE" => "Basic realm=\"#{env['warden.options'][:attempted_path]}\""}, ["Auth"]] }
 				when :form
 					->(env) {[302, {"LOCATION" => env['warden.options'][:action]} , []] }
 				when :token
@@ -70,7 +71,6 @@ class Roda
 					user = warden.authenticate!
 					warden.set_user(user)
 					request.is(&block) if block
-					request.response.status = 201
 					user
 				end
 				
@@ -79,9 +79,9 @@ class Roda
 					warden.raw_session.inspect # Without this inspect here. The session does not clear.
 					warden.logout(scope)
 					warden.clear_strategies_cache!(scope: scope)
-
-					request.is(&block) if block
+					
 					request.response.status = 204
+					request.is(&block) if block
 				end
 				
 				private
@@ -173,6 +173,10 @@ class Roda
 				def valid?
 					credentials['username'] && credentials['password']
 				end
+				
+				# def result
+				# 	:redirect
+				# end
 				
 				private
 			

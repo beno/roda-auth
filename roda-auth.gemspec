@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
 	
 	s.add_runtime_dependency 'roda', '~> 1.2'
 	s.add_runtime_dependency 'warden', '~> 1.2'
+	s.add_runtime_dependency 'bcrypt', '~> 3'
 
 	s.add_development_dependency 'rake', '~> 10'
 	s.add_development_dependency 'minitest', '~> 5.5'
