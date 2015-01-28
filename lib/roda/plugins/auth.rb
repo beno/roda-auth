@@ -21,13 +21,13 @@ class Roda
 				options = args.last.is_a?(Hash) ? args.pop : {}
 				user_class = options.delete(:user_class) || ::User
 				type = args[0] || :basic
-				redirect = options.delete(:redirect) || 'unauthenticated'
+				redirect = options.delete(:redirect) || 'login'
 				case type
 				when :basic
 					strategies = [:basic]
 				when :form
 					strategies = [:password]
-					app.use Rack::Session::Cookie, secret:'foo'
+					app.use Rack::Session::Cookie, options.delete(:cookie)
 				when :token
 					strategies = [:token, :password]
 				end
