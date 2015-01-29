@@ -1,6 +1,10 @@
 Roda plugin for Authentication
 =============
 
+### Status
+
+This is a first stab at integrating Roda and Warden. It is by no means ready for real use.
+
 ### Quick start
 
 Install gem with
@@ -57,6 +61,12 @@ class MyUser
     else
       self.check_password(credentials['username'], credentials['password'])
     end
+  end
+  
+  #required when using :form strategy (for sessions)
+  
+  def self.find_by_id(id)
+    find(id)
   end
   
   #optional - used for  generating/updating auth tokens or tracking logins

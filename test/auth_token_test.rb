@@ -40,7 +40,7 @@ class AuthTokenTest < Minitest::Test
 	end
 	
 	def test_login_body
-		assert_equal 201, status('/session', {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(valid_credentials)})
+		assert_equal 200, status('/session', {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(valid_credentials)})
 	end
 	
 	def test_login_body_invalid

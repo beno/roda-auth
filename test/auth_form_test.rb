@@ -13,10 +13,10 @@ class AuthFormTest < Minitest::Test
 
 		app :bare do |app|
 			
-			app.plugin :auth, :form, redirect: '/login'
+			app.plugin :auth, :form, redirect: '/login', cookie: {secret:'foo'}
 			
 			app.route do |r|
-				r.post('login') { sign_in }
+				r.post('login') { sign_in ? 'ok' : nil }
 				r.get('login') { 'LOGIN FORM' }
 				r.post('logout') { sign_out }
 				r.on 'public' do
@@ -33,7 +33,7 @@ class AuthFormTest < Minitest::Test
 	def test_public
 		assert_equal 200, status('/public')
 	end
-
+	
 	def test_private_refuse_redirect
 		r = req('/private')
 		assert_equal 302, r[0]
@@ -41,13 +41,13 @@ class AuthFormTest < Minitest::Test
 	end
 	
 	def test_private_accepted
-		post('/signout')
+		post('/logout')
 		cookie = login
 		assert_equal 200, status('/private', {'HTTP_COOKIE' => cookie})
 	end
 	
 	def test_private_error
-		req('/signout')
+		req('/logout')
 		cookie = login(invalid_credentials)
 		assert_equal 302, status('/private', {'HTTP_COOKIE' => cookie})
 	end
@@ -58,7 +58,7 @@ class AuthFormTest < Minitest::Test
 		
 	def login(cred = valid_credentials)
 		r = req('/login', {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(cred)})
-		r[0] == 201 && r[1]["Set-Cookie"]
+		r[0] == 200 && r[1]["Set-Cookie"]
 	end
 	
 

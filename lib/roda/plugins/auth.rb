@@ -28,6 +28,12 @@ class Roda
 				when :form
 					strategies = [:password]
 					app.use Rack::Session::Cookie, options.delete(:cookie)
+					Warden::Manager.serialize_into_session do |user|
+						user.id
+					end
+					Warden::Manager.serialize_from_session do |id|
+						user_class.find_by_id(id)
+					end
 				when :token
 					strategies = [:token, :password]
 				end

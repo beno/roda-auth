@@ -30,7 +30,7 @@ class AuthBasicTest < Minitest::Test
 	def test_public
 		assert_equal 200, status('/public')
 	end
-
+	
 	def test_private_refused
 		assert_equal 401, status('/private')
 		assert_equal "Basic realm=\"/private\"", header('WWW-AUTHENTICATE', '/private')

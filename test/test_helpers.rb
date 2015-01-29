@@ -148,7 +148,7 @@ module TestHelpers
 		end
 	
 		## test dummy
-	
+			
 		def initialize(args)
 			@username = args[:username]
 			@password = args[:password]
@@ -158,6 +158,12 @@ module TestHelpers
 	
 		def self.db
 			@@db ||= {users: {}, tokens: {}}
+		end
+		
+		def self.find_by_id(id)
+			db[:users].values.find do |u|
+				u.id == id
+			end
 		end
 
 		def to_json(state = nil)
