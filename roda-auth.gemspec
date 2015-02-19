@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
 	s.name        = 'roda-auth'
-	s.version     = '0.0.1'
+	s.version     = '0.0.2'
 	s.date        = '2014-12-21'
 	s.summary     = "Roda authentication"
 	s.description = "A Roda plugin for authentication with Warden"
@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
 	s.homepage    = 'http://github.com/beno/roda-auth'
 	s.license     = 'MIT'
 	
-	s.add_runtime_dependency 'roda', '~> 1.2'
+	s.add_runtime_dependency 'roda', '~> 2'
 	s.add_runtime_dependency 'warden', '~> 1.2'
 	s.add_runtime_dependency 'bcrypt', '~> 3'
 

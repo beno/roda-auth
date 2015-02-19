@@ -21,11 +21,13 @@ require 'roda/auth'
 
 class App < Roda
   
+  # plugin options, all optional
   # supports 3 auth types: :basic (default), :form, or :token
   # :user_class defaults to ::User
-  # :redirect defaults to '/login'
+  # :redirect - url for login page, defaults to '/login'
+  # :cookie - options hash for session cookie, see Rack::Session::Cookie
   
-  plugin :auth, :form, user_class: MyUser, redirect: '/login'
+  plugin :auth, :form, user_class: MyUser, redirect: '/login', cookie: {secret:'secret'}
   
   route do |r|
     r.post 'login' do
