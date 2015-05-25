@@ -1,6 +1,4 @@
 require "test_helpers"
-require 'json'
-require 'roda/auth'
 
 class AuthFormTest < Minitest::Test
 	include Rack::Test::Methods

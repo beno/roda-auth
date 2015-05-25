@@ -4,6 +4,7 @@ require "roda"
 require "json"
 require "stringio"
 require "rack/test"
+require 'roda/auth'
 
 module TestHelpers
 	def app(type=nil, &block)

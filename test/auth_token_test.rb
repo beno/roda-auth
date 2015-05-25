@@ -1,6 +1,4 @@
 require "test_helpers"
-require 'json'
-require 'roda/auth'
 
 class AuthTokenTest < Minitest::Test
 	include Rack::Test::Methods
