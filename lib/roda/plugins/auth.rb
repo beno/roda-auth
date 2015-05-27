@@ -3,6 +3,9 @@ require 'bcrypt'
 require 'json'
 require 'warden'
 require 'roda'
+require 'omniauth'
+require 'omniauth-twitter'
+require 'omniauth-facebook'
 
 class Roda
 	
@@ -12,6 +15,7 @@ class Roda
 			
 			def self.load_dependencies(app, *args, &block)
 				app.plugin :drop_body
+				app.plugin :environments
 				Warden::Strategies.add(:token, Strategies::Token)
 				Warden::Strategies.add(:password, Strategies::Password)
 				Warden::Strategies.add(:basic, Strategies::Basic)
@@ -33,6 +37,11 @@ class Roda
 					end
 					Warden::Manager.serialize_from_session do |id|
 						user_class.find_by_id(id)
+					end
+					app.use OmniAuth::Builder do
+						provider :developer unless app.production?
+						provider :twitter, ENV['TWITTER_KEY'], ENV['TWITTER_SECRET']
+						provider :facebook, ENV['FACEBOOK_KEY'], ENV['FACEBOOK_SECRET']
 					end
 				when :token
 					strategies = [:token, :password]
