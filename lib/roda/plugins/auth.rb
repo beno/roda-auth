@@ -82,7 +82,6 @@ class Roda
 				end
 				
 				def sign_in &block
-					raise RodaError 'sign_in with POST only' unless request.env['REQUEST_METHOD'] == "POST"
 					user = warden.authenticate!
 					warden.set_user(user)
 					request.is(&block) if block
