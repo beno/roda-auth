@@ -3,6 +3,9 @@ require 'bcrypt'
 require 'json'
 require 'warden'
 require 'roda'
+require 'omniauth'
+require 'omniauth-twitter'
+require 'omniauth-facebook'
 
 class Roda
 	
@@ -12,6 +15,7 @@ class Roda
 			
 			def self.load_dependencies(app, *args, &block)
 				app.plugin :drop_body
+				app.plugin :environments
 				Warden::Strategies.add(:token, Strategies::Token)
 				Warden::Strategies.add(:password, Strategies::Password)
 				Warden::Strategies.add(:basic, Strategies::Basic)
@@ -22,12 +26,13 @@ class Roda
 				user_class = options.delete(:user_class) || ::User
 				type = args[0] || :basic
 				redirect = options.delete(:redirect) || 'login'
+				cookie = options.delete(:cookie) || {secret:'secr3t'}
 				case type
 				when :basic
 					strategies = [:basic]
 				when :form
 					strategies = [:password]
-					app.use Rack::Session::Cookie, options.delete(:cookie)
+					app.use Rack::Session::Cookie, cookie
 					Warden::Manager.serialize_into_session do |user|
 						user.id
 					end
@@ -35,6 +40,7 @@ class Roda
 						user_class.find_by_id(id)
 					end
 				when :token
+					app.use Rack::Session::Cookie, cookie
 					strategies = [:token, :password]
 				end
 				app.use Warden::Manager do |config|
@@ -47,6 +53,16 @@ class Roda
 						:action       => redirect
 					)
  				end
+ 				if providers = options.delete(:omniauth)
+	 				app.use OmniAuth::Builder do
+	 					provider :developer unless app.production?
+	 					providers.each do |name|
+							key = ENV["API_#{name.to_s.upcase}_KEY"]
+							secret = ENV["API_#{name.to_s.upcase}_SECRET"]
+							provider name, key, secret
+		 				end
+	 				end
+	 			end
 			end
 			
 			def self.fail(type)
@@ -60,7 +76,7 @@ class Roda
 				end
 				->(env) { auth_fail.call(env) }
 			end
-									
+												
 			module InstanceMethods
 				
 				def authenticate!
