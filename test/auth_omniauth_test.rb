@@ -31,16 +31,9 @@ class OmniauthTest < Minitest::Test
 		assert_equal 200, status('/public')
 	end
 	
-	
 	def test_protected_error
 		assert_equal 401, status('/private')
 	end
-	
-	# def test_private_refuse_redirect
-	# 	status, headers = req('/private')
-	# 	assert_equal 302, status
-	# 	assert_equal "login", headers['LOCATION']
-	# end
 	
 	def test_twitter_redirect
 		status, headers = req('/auth/twitter', {'rack.input' => []})
