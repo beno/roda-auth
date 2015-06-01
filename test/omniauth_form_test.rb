@@ -1,4 +1,6 @@
 require "test_helpers"
+require "omniauth-twitter"
+require "omniauth-facebook"
 
 class OmniauthFormTest < Minitest::Test
 	include Rack::Test::Methods
