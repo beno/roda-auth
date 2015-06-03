@@ -39,7 +39,7 @@ class AuthFormTest < Minitest::Test
 	end
 	
 	def test_private_accepted
-		post('/logout')
+		req('/logout')
 		cookie = login
 		assert_equal 200, status('/private', {'HTTP_COOKIE' => cookie})
 	end

@@ -4,6 +4,7 @@ PATH
     roda-auth (0.1.0)
       bcrypt (~> 3)
       omniauth (~> 1)
+      rack_csrf (~> 2.5)
       roda (~> 2)
       warden (~> 1.2)
 
@@ -44,6 +45,8 @@ GEM
     rack (1.6.0)
     rack-test (0.6.2)
       rack (>= 1.0)
+    rack_csrf (2.5.0)
+      rack (>= 1.1.0)
     rake (10.4.2)
     roda (2.3.0)
       rack

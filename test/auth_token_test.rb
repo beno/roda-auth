@@ -66,7 +66,8 @@ class AuthTokenTest < Minitest::Test
 	private
 		
 	def login
-		body = body('/session', {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(valid_credentials)})
+		env = {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(valid_credentials)}
+		body = body('/session', env)
 		JSON.parse(body)
 	end
 	

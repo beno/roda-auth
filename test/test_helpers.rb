@@ -29,8 +29,8 @@ module TestHelpers
 		else
 			env['PATH_INFO'] = path
 		end
-
 		env = {"REQUEST_METHOD" => "GET", "PATH_INFO" => "/", "SCRIPT_NAME" => ""}.merge(env)
+		setup_csrf(env)
 		@app.call(env)
 	end
 
@@ -67,7 +67,14 @@ module TestHelpers
 	def invalid_credentials
 		{username:'foo', password:'baz'}
 	end
-
+	
+	def setup_csrf(env)
+		if env['REQUEST_METHOD'] != 'GET'
+			env['rack.session'] = {}
+			token = Rack::Csrf.token(env)
+			env['HTTP_X_CSRF_TOKEN'] = token
+		end
+	end
 
 	class Mock
 	
