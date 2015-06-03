@@ -4,7 +4,6 @@ class AuthFormTest < Minitest::Test
 	include Rack::Test::Methods
 	include TestHelpers
 
-	
 	def setup
 		u = User.new(valid_credentials)
 		User.db[:users][u.username] = u
@@ -49,20 +48,15 @@ class AuthFormTest < Minitest::Test
 		cookie = login(invalid_credentials)
 		assert_equal 302, status('/private', {'HTTP_COOKIE' => cookie})
 	end
-
-
 	
 	private
 		
 	def login(cred = valid_credentials)
-		r = req('/login', {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(cred)})
-		r[0] == 200 && r[1]["Set-Cookie"]
+		status, headers = req('/login', {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(cred)})
+		status == 200 && headers["Set-Cookie"]
 	end
-	
 
-		
 end
-
 
 class User < TestHelpers::User ; end
 
