@@ -29,6 +29,7 @@ class Roda
 					strategies = [:basic]
 				when :form
 					strategies = [:password]
+					options[:csrf] = true
 				when :token
 					strategies = [:token, :password]
 				end
@@ -69,9 +70,11 @@ class Roda
 				Warden::Manager.serialize_from_session do |id|
 					user_class.find_by_id(id)
 				end
-				app.plugin :csrf, raise: true, skip_if: lambda { |request|
-					request.env.key? 'HTTP_AUTHORIZATION'
-				}
+				if options[:csrf]
+					app.plugin :csrf, raise: true, skip_if: lambda { |request|
+						request.env.key? 'HTTP_AUTHORIZATION'
+					}
+				end
 			end
 
 			def self.setup_omniauth(app, options)
@@ -170,7 +173,7 @@ class Roda
 				end
 
 				def credentials_from_form
-					request.media_type == "application/x-www-form-urlencoded" && params
+					request.media_type == "application/x-www-form-urlencoded" && request.params
 				end
 
 				def credentials_from_body
@@ -202,7 +205,7 @@ class Roda
 				private
 
 				def credentials
-					@credentials ||= credentials_from_form || credentials_from_body || {}
+					@credentials ||= credentials_from_form || {}
 				end
 
 			end
@@ -229,13 +232,13 @@ class Roda
 			class Token < Base
 
 				def valid?
-					credentials['token']
+					credentials['token'] || (credentials['username'] && credentials['password'])
 				end
 
 				private
 
 				def credentials
-					@credentials ||= token_from_auth_header || {}
+					@credentials ||= token_from_auth_header || credentials_from_body || {}
 				end
 
 			end

@@ -26,16 +26,16 @@ class AuthBasicTest < Minitest::Test
 	end
 	
 	def test_public
-		assert_equal 200, status('/public')
+		assert_equal 200, request.get('/public').status
 	end
 	
 	def test_private_refused
-		assert_equal 401, status('/private')
-		assert_equal "Basic realm=\"/private\"", header('WWW-AUTHENTICATE', '/private')
+		assert_equal 401, request.get('/private').status
+		assert_equal "Basic realm=\"/private\"", request.get('/private').headers['WWW-AUTHENTICATE']
 	end
 	
 	def test_private_accepted
-		assert_equal 200, status('/private', {"HTTP_AUTHORIZATION" => "Basic #{http_auth(valid_credentials)}"})
+		assert_equal 200, request.get('/private', {"HTTP_AUTHORIZATION" => "Basic #{http_auth(valid_credentials)}"}).status
 	end
 		
 end

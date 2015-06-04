@@ -28,33 +28,25 @@ class AuthFormTest < Minitest::Test
 	end
 	
 	def test_public
-		assert_equal 200, status('/public')
+		assert_equal 200, request.get('/public').status
 	end
 	
 	def test_private_refuse_redirect
-		r = req('/private')
-		assert_equal 302, r[0]
-		assert_equal "/login", r[1]['LOCATION']
+		response = request.get('/private')
+		assert_equal 302, response.status
+		assert_equal "/login", response.headers['LOCATION']
 	end
 	
 	def test_private_accepted
-		req('/logout')
-		cookie = login
-		assert_equal 200, status('/private', {'HTTP_COOKIE' => cookie})
+		cookie = form_login.headers['Set-Cookie']
+		response = request.get('/private')
+		assert_equal 200, request.get('/private', {'HTTP_COOKIE' => cookie}).status
 	end
 	
 	def test_private_error
-		req('/logout')
-		cookie = login(invalid_credentials)
-		assert_equal 302, status('/private', {'HTTP_COOKIE' => cookie})
-	end
-	
-	private
-		
-	def login(cred = valid_credentials)
-		status, headers = req('/login', {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(cred)})
-		status == 200 && headers["Set-Cookie"]
-	end
+		cookie = form_login(invalid_credentials).headers['Set-Cookie']
+		assert_equal 302, request.get('/private', {'HTTP_COOKIE' => cookie}).status
+	end		
 
 end
 

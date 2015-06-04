@@ -29,24 +29,25 @@ class OmniauthTest < Minitest::Test
 	end
 
 	def test_unprotected_access
-		assert_equal "public", body('/public')
-		assert_equal 200, status('/public')
+		response = request.get('/public')
+		assert_equal "public", response.body
+		assert_equal 200, response.status
 	end
 
 	def test_protected_error
-		assert_equal 401, status('/private')
+		assert_equal 401, request.get('/private').status
 	end
 
 	def test_twitter_redirect
-		status, headers = req('/auth/twitter', {'rack.input' => []})
-		assert_equal 302, status
-		assert_equal "api.twitter.com", URI(headers['LOCATION']).host
+		response = request.get('/auth/twitter')
+		assert_equal 302, response.status
+		assert_equal "api.twitter.com", URI(response.headers['LOCATION']).host
 	end
 
 	def test_facebook_redirect
-		status, headers = req('/auth/facebook', {'rack.input' => ""})
-		assert_equal 302, status
-		assert_equal "www.facebook.com", URI(headers['LOCATION']).host
+		response = request.get('/auth/facebook')
+		assert_equal 302, response.status
+		assert_equal "www.facebook.com", URI(response.headers['LOCATION']).host
 	end
 
 

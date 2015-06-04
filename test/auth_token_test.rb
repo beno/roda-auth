@@ -6,8 +6,9 @@ class AuthTokenTest < Minitest::Test
 
 	
 	def setup
-		u = User.new(valid_credentials)
-		User.db[:users][u.username] = u
+		@u = User.new(valid_credentials)
+		User.db[:users][@u.username] = @u
+		User.db[:tokens]['1234token'] = @u
 
 		app :bare do |app|
 			
@@ -17,59 +18,65 @@ class AuthTokenTest < Minitest::Test
 				r.on 'public' do
 					'public'
 				end
-				r.post('session') { sign_in.to_json }
+				r.post('session') do |args|
+					 sign_in
+					{'token' => current_user.token}.to_json 
+				end
 				authenticate!
 				r.is('session', method: :delete) { sign_out }
 				r.on 'private' do
-					"private #{current_user.username}"
+					"private #{current_user.token}"
 				end
 			end
 		end
 	end
 	
 	def test_unprotected_access
-		assert_equal "public", body('/public')
-		assert_equal 200, status('/public')
+		response = request.get '/public'
+		assert_equal "public", response.body
+		assert_equal 200, response.status
 	end
 	
 	
 	def test_protected_error
-		assert_equal 401, status('/private')
+		response = request.get '/private'
+		assert_equal 401, response.status
 	end
 	
 	def test_login_body
-		assert_equal 200, status('/session', {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(valid_credentials)})
+		response = json_login
+		assert_equal 200, response.status
 	end
 	
 	def test_login_body_invalid
-		assert_equal 401, status('/session', {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(invalid_credentials)})
+		response = json_login(invalid_credentials)
+		assert_equal 401, response.status
 	end
 	
 	def test_token_response
-		json = body('/session', {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(valid_credentials)})
-		args = JSON.parse(json)
-		assert_equal valid_credentials[:username], args['username']
-		assert args['token']
+		session = JSON.parse(json_login.body)
+		assert_equal @u.token, session['token']
 	end
 	
 	def test_token_access
-		user_args = login
-		assert_equal 200, status('/private', {"HTTP_AUTHORIZATION" => "Auth #{user_args['token']}"})
-		assert_equal "private #{user_args['username']}", body('/private', {"HTTP_AUTHORIZATION" => "Auth #{user_args['token']}"})
+		session = JSON.parse(json_login.body)
+		response = request.get('/private', {'HTTP_AUTHORIZATION' => "Auth #{session['token']}"})
+		assert_equal 200, response.status
+		assert_equal "private #{session['token']}", response.body
 	end
 	
 	def test_logout
-		user_args = login
-		assert_equal 204, status('/session', {'REQUEST_METHOD' => 'DELETE', "HTTP_AUTHORIZATION" => "Auth #{user_args['token']}"})
+		session = JSON.parse(json_login.body)
+		response = request.delete('/session', {'HTTP_AUTHORIZATION' => "Auth #{session['token']}"})
+		assert_equal 204, response.status
 	end
-	
+			
 	private
-		
-	def login
-		env = {'REQUEST_METHOD' => 'POST', 'rack.input' => save_args(valid_credentials)}
-		body = body('/session', env)
-		JSON.parse(body)
+	
+	def json_login(cred = valid_credentials)
+		request.post('/session', params: cred.to_json)
 	end
+
 	
 end
 
